@@ -14,7 +14,7 @@ function GameBoard() {
     const getBoard = () => board;
 
     const placeToken = (row, column, marker) => {
-        board[row][column].addToken(marker)
+        return board[row][column].addToken(marker)
     }
 
     const checkWinner = (row, column, marker) => {
@@ -65,7 +65,13 @@ function Cell() {
     let value = 0;
 
     const addToken = (marker) => {
-        value = value === 0 ? marker: value;
+        if (value===0) {
+            value = marker
+            return true
+        } else {
+            return false
+        }
+        // value = value === 0 ? marker: value;
     };
 
     const resetToken = () => {
@@ -79,13 +85,14 @@ function Cell() {
 
 function newPlayer(number, marker) {
     let totalTokens = 0;
+    let name = "Player " + String(number)
 
     const addToken = () => totalTokens++;
     const getTokens = () => totalTokens;
     const zeroTokens = () => {
         totalTokens = 0;
     }
-    return {number, marker, addToken, getTokens, zeroTokens}
+    return {number, marker, name, addToken, getTokens, zeroTokens}
 }
 
 
@@ -107,26 +114,36 @@ function GameController() {
 
     const getActivePlayer = () => currentPlayer;
 
+    const updatePlayerName = (number, name) => {
+        if (number === 1) {
+            playerOne.name = name
+        } else if (number === 2) {
+            playerTwo.name = name
+        }
+    }
+
     const printNewRound = () => {
         gameBoard.printBoard();
-        console.log(`Player ${getActivePlayer().number}'s turn`);
+        console.log(`${getActivePlayer().name}'s turn`);
     }
 
     const playRound = (row, column) => {
-        gameBoard.placeToken(row, column, getActivePlayer().marker)
-        getActivePlayer().addToken()
+        let status = gameBoard.placeToken(row, column, getActivePlayer().marker)
+        if (status) {
+            getActivePlayer().addToken()
 
-        if (getActivePlayer().getTokens() > 2) {
-            isWinner = gameBoard.checkWinner(row, column, getActivePlayer().marker)
-        }
-
-        if (isWinner) {
-            console.log(`The winner is Player ${getActivePlayer().number}`)
-        } else if (playerOne.getTokens()+playerTwo.getTokens()>=9) {
-            console.log("The game is a tie!")
-        } else {
-            switchPlayer()
-            printNewRound()
+            if (getActivePlayer().getTokens() > 2) {
+                isWinner = gameBoard.checkWinner(row, column, getActivePlayer().marker)
+            }
+    
+            if (isWinner) {
+                console.log(`The winner is ${getActivePlayer().name}`)
+            } else if (playerOne.getTokens()+playerTwo.getTokens()>=9) {
+                console.log("The game is a tie!")
+            } else {
+                switchPlayer()
+                printNewRound()
+            }
         }
     }
 
@@ -145,7 +162,7 @@ function GameController() {
 
     printNewRound()
 
-    return {playRound, getActivePlayer, resetGame, getBoard: gameBoard.getBoard, getGameStatus, getBoardTokens}
+    return {playRound, getActivePlayer,updatePlayerName, resetGame, getBoard: gameBoard.getBoard, getGameStatus, getBoardTokens}
 }
 
 function ScreenController() {
@@ -153,6 +170,20 @@ function ScreenController() {
     const playerTurnDiv = document.querySelector('.playerTurn')
     const boardDiv = document.querySelector('.board')
     const reset = document.querySelector('.reset')
+    const form = document.querySelector('form')
+
+    form.addEventListener("submit", (event) => {
+        const data = new FormData(form)
+        let i = 1;
+        for (const entry of data) {
+            if (entry[1]) {
+                game.updatePlayerName(i, entry[1])
+            }
+            i++;
+        }
+        updateScreen()
+        event.preventDefault();
+      }, false,)
 
     const resetScreen = () => {
         game.resetGame()
@@ -169,11 +200,11 @@ function ScreenController() {
 
 
         if (game.getGameStatus()) {
-            playerTurnDiv.textContent = `Player ${activePlayer.number} is Winner!`
+            playerTurnDiv.textContent = `${activePlayer.name} is Winner!`
         } else if (game.getBoardTokens()===9) {
             playerTurnDiv.textContent = `Game is a tie!`
         } else {
-            playerTurnDiv.textContent = `Player ${activePlayer.number}'s turn...`
+            playerTurnDiv.textContent = `${activePlayer.name}'s turn...`
         }
         
 

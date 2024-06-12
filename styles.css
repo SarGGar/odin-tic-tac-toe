@@ -5,9 +5,22 @@ body {
 button {
     border: 2px solid black;
     font-size: 24px;
+    padding: 20px 50px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
 }
 
 .container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    align-items: center;
+}
+
+.game {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -27,11 +40,9 @@ button {
     border: 1px solid black;
 }
 
-.reset {
-    padding: 20px 50px;
-    font-size: 24px;
+
+.reset, .submit button {
     background-color: green;
 }
-
 
 
